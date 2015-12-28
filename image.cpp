@@ -1,5 +1,3 @@
-#include "stdio.h"
-#include "stdlib.h"
 #include "string.h"
 #include <fstream>
 #include <iostream>
@@ -9,8 +7,17 @@
 
 using namespace std;
 
-cl_program load_program(cl_context context, const char* filename)
+const char* kernelSrc = " \
+__kernel void adder(__global const unsigned int* a, __global unsigned int* result)\n \
+{\n \
+	int idx = get_global_id(0);\n \
+	result[idx] = a[idx] + 256 * (idx%3);\n \
+}\n \
+";
+
+cl_program load_program(cl_context context)
 {
+/*
 	std::ifstream in(filename, std::ios_base::binary);
 	if(!in.good()) {
 		return 0;
@@ -27,7 +34,9 @@ cl_program load_program(cl_context context, const char* filename)
 	data[length] = 0;
 
 	// create and build program 
-	const char* source = &data[0];
+	//const char* source = &data[0];
+*/
+	const char* source = kernelSrc;
 	cl_program program = clCreateProgramWithSource(context, 1, &source, 0, 0);
 	if(program == 0) {
 		return 0;
@@ -95,7 +104,7 @@ unsigned int * histogram ( unsigned int * image_data , unsigned int _size )
 		exit(1);
 	}
 
-	cl_program program = load_program(context, "shader.cl");
+	cl_program program = load_program(context);
 	if(program == 0) {
 		std::cerr << "Can't load or build program\n";
 		clReleaseMemObject(cl_a);
